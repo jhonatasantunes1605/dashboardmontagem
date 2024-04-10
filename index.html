@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <!-- Inclua as bibliotecas JustGage, jQuery e Font Awesome -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.4/raphael-min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/justgage/1.4.0/justgage.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://kit.fontawesome.com/b40fdac81a.js" crossorigin="anonymous"></script>
+    <!-- Inclua a biblioteca da API do Google Sheets -->
+    <script src="https://apis.google.com/js/api.js"></script>
+    <style>
+        /* Estilos CSS combinados */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #666666
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 32px;
+            margin-bottom: 40px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .indicator {
+            flex-basis: calc(50% - 10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .indicator-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #FF4500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            font-size: 30px;
+            color: #F5F5DC;
+            cursor: pointer;
+            animation: pulseAnimation 1s;
+        }
+
+        @keyframes pulseAnimation {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .indicator-label {
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            color: #fff;
+            font-family: Trebuchet MS, sans-serif;
+        }
+
+        /* Adicionando estilo para a cor verde */
+        .indicator-icon.green {
+            background-color: green;
+        }
+
+        .indicator-icon.clock {
+            font-size: 50px;
+            color: #FFFFFF;
+            cursor: pointer;
+            animation: pulseAnimation 1s;
+        }
+
+        /* Estilos específicos para o velocímetro */
+        #gauge {
+            margin: 0 auto; /* Centralize horizontalmente */
+            margin-top: 50px;
+            text-align: center;
+            width: 500px; /* Defina a largura do velocímetro */
+            height: 300px; /* Defina a altura do velocímetro */
+        }
+
+        /* Estilos para o relógio */
+        #clock {
+            text-align: center;
+            font-size: 96px; /* Ajuste o tamanho do texto */
+            margin-top: 20px;
+            font-family: 'Orbitron', sans-serif; /* Use a fonte 'Orbitron' */
+            color: white; /* Cor do relógio */
+        }
+
+        /* Importação da fonte Orbitron */
+        @font-face {
+            font-family: 'Orbitron';
+            font-style: normal;
+            font-weight: 400;
+            src: url(https://fonts.gstatic.com/s/orbitron/v15/yMJRMIlzdpvBhQQL_Qq7dys.ttf) format('truetype');
+        }
+    </style>
+</head>
+<body>
+<div id="clock"></div> <!-- Relógio -->
+<div class="container">
+    <h1 style="font-family:Trebuchet MS, sans-serif; font-size: 39px; color: white; margin-bottom: 60px;">Dashboard Montagem</h1>
+    <div class="row" id="row1"></div>
+    <div class="row" id="row2"></div>
+</div>
+
+<div id="gauge"></div>
+
+<script>
+    // Relógio
+    function updateClock() {
+        var now = new Date();
+        var hours = now.getHours().toString().padStart(2, '0');
+        var minutes = now.getMinutes().toString().padStart(2, '0');
+        var seconds = now.getSeconds().toString().padStart(2, '0');
+        var timeString = hours + ':' + minutes + ':' + seconds;
+        document.getElementById('clock').textContent = timeString;
+    }
+
+    setInterval(updateClock, 1000); // Atualiza o relógio a cada segundo
+
+    // Código JavaScript combinado
+    $(document).ready(function () {
+        var apiKey = 'AIzaSyAIB-qCRdOAgEJYuPAxNTEsoR2Ijt33-TE';
+        var spreadsheetId = '19A-Wgk9U-cZc7Pieq0sGTYDjnUxNk9Qnl9yPmwXwStM';
+        var range = 'INDICADOR HTML!K:L';
+
+        var url = 'https://sheets.googleapis.com/v4/spreadsheets/' + spreadsheetId + '/values/' + range + '?key=' + apiKey;
+        var allRecords = [];
+
+        function updateIndicator() {
+            $.get(url, function (data) {
+                var values = data.values;
+                allRecords = values.slice(1);
+                var indicatorContainer1 = $('#row1');
+                var indicatorContainer2 = $('#row2');
+                indicatorContainer1.empty();
+                indicatorContainer2.empty();
+
+                var totalRecords = allRecords.length;
+                var halfRecords = Math.ceil(totalRecords / 2);
+
+                for (var i = 0; i < totalRecords; i++) {
+                    var record = allRecords[i];
+                    var label = record[0];
+                    var value = record[1];
+
+                    var indicatorHtml = '<div class="indicator">';
+                    if (value === "0") {
+                        indicatorHtml += '<div class="indicator-icon green">' + value + '</div>';
+                    } else if (value === undefined) {
+                        indicatorHtml += '<div class="indicator-icon clock"><i class="fas fa-clock"></i></div>';
+                    } else {
+                        indicatorHtml += '<div class="indicator-icon">' + value + '</div>';
+                    }
+                    indicatorHtml += '<div class="indicator-label">' + label + '</div>';
+                    indicatorHtml += '</div>';
+
+                    if (i < halfRecords) {
+                        indicatorContainer1.append(indicatorHtml);
+                    } else {
+                        indicatorContainer2.append(indicatorHtml);
+                    }
+                }
+            });
+        }
+
+        updateIndicator();
+
+        setInterval(function () {
+            updateIndicator();
+        }, 5000); // 5000 milliseconds = 5 seconds
+    });
+
+    // Configuração do velocímetro
+    var cachedValue = null; // Valor em cache da célula
+    var lastUpdateTimestamp = 0; // Timestamp da última atualização
+
+    // Meta: 20 computadores montados no final do dia (10 horas de trabalho)
+    var totalComputersGoal = 20;
+    var totalWorkHours = 10;
+    var computersPerHourGoal = totalComputersGoal / totalWorkHours; // 2 computadores por hora
+
+    // Função para carregar a API do Google Sheets
+    function loadSheetsApi() {
+        return new Promise((resolve, reject) => {
+            gapi.load('client', resolve);
+        });
+    }
+
+    // Função para inicializar a API do Google Sheets
+    async function initSheetsApi() {
+        await loadSheetsApi();
+        await gapi.client.init({
+            apiKey: 'AIzaSyAIB-qCRdOAgEJYuPAxNTEsoR2Ijt33-TE',
+            discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
+        });
+    }
+
+    // Função para obter o valor da célula específica
+    async function getCellValue() {
+        await initSheetsApi();
+        const response = await gapi.client.sheets.spreadsheets.values.get({
+            spreadsheetId: '19A-Wgk9U-cZc7Pieq0sGTYDjnUxNk9Qnl9yPmwXwStM',
+            range: 'INDICADOR HTML!L9',
+        });
+        const value = response.result.values[0][0];
+        cachedValue = parseFloat(value);
+        lastUpdateTimestamp = Date.now();
+        return cachedValue;
+    }
+
+    // Configuração do velocímetro
+    var gauge = new JustGage({
+        id: "gauge",
+        value: 0, // Valor inicial
+        min: 0,
+        max: computersPerHourGoal * 1.5, // Definir o máximo como 1.5 vezes a meta para melhor visualização
+        title: "Produção",
+        label: "Computadores/hora",
+        levelColors: ["#FF0000", "#FFFF00", "#00FF00"], // Cores dos níveis: vermelho, amarelo, verde
+        gaugeWidthScale: 1.5, // Ajuste a largura do velocímetro (aumente ou diminua conforme necessário)
+        gaugeColor: "#eee" // Cor do velocímetro
+    });
+
+    // Função para atualizar o valor do velocímetro
+    async function updateGaugeValue() {
+        // Verificar se é necessário atualizar o valor da célula
+        if (Date.now() - lastUpdateTimestamp > 60000) { // Verifica se passou 1 minuto desde a última atualização
+            await getCellValue();
+        }
+        // Atualizar o valor do velocímetro
+        gauge.refresh(cachedValue);
+    }
+
+    // Atualizar o valor do velocímetro a cada 2 segundos
+    setInterval(updateGaugeValue, 2000);
+</script>
+
+</body>
+</html>
