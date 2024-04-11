@@ -17,7 +17,7 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #666666
+            background-color: #666666;
         }
 
         .container {
@@ -29,14 +29,23 @@
         h1 {
             text-align: center;
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 32px;
-            margin-bottom: 40px;
+            font-size: 36px;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        #clock {
+            text-align: center;
+            font-size: 72px;
+            margin-bottom: 20px;
+            font-family: 'Orbitron', sans-serif; /* Use a fonte 'Orbitron' */
+            color: white; /* Cor do relógio */
         }
 
         .row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .indicator {
@@ -98,19 +107,10 @@
         /* Estilos específicos para o velocímetro */
         #gauge {
             margin: 0 auto; /* Centralize horizontalmente */
-            margin-top: 50px;
             text-align: center;
             width: 500px; /* Defina a largura do velocímetro */
             height: 300px; /* Defina a altura do velocímetro */
-        }
-
-        /* Estilos para o relógio */
-        #clock {
-            text-align: center;
-            font-size: 96px; /* Ajuste o tamanho do texto */
-            margin-top: 20px;
-            font-family: 'Orbitron', sans-serif; /* Use a fonte 'Orbitron' */
-            color: white; /* Cor do relógio */
+            margin-bottom: 50px; /* Adiciona espaço inferior */
         }
 
         /* Importação da fonte Orbitron */
@@ -125,7 +125,7 @@
 <body>
 <div id="clock"></div> <!-- Relógio -->
 <div class="container">
-    <h1 style="font-family:Trebuchet MS, sans-serif; font-size: 39px; color: white; margin-bottom: 60px;">Dashboard Montagem</h1>
+    <h1>Dashboard Montagem</h1>
     <div class="row" id="row1"></div>
     <div class="row" id="row2"></div>
 </div>
@@ -202,10 +202,10 @@
     var cachedValue = null; // Valor em cache da célula
     var lastUpdateTimestamp = 0; // Timestamp da última atualização
 
-    // Meta: 20 computadores montados no final do dia (10 horas de trabalho)
+    // Meta: 20 computadores montados no final do dia (8 horas de trabalho)
     var totalComputersGoal = 20;
-    var totalWorkHours = 10;
-    var computersPerHourGoal = totalComputersGoal / totalWorkHours; // 2 computadores por hora
+    var totalWorkHours = 8;
+    var computersPerHourGoal = totalComputersGoal / totalWorkHours; // 2.5 computadores por hora
 
     // Função para carregar a API do Google Sheets
     function loadSheetsApi() {
@@ -246,13 +246,14 @@
         label: "Computadores/hora",
         levelColors: ["#FF0000", "#FFFF00", "#00FF00"], // Cores dos níveis: vermelho, amarelo, verde
         gaugeWidthScale: 1.5, // Ajuste a largura do velocímetro (aumente ou diminua conforme necessário)
-        gaugeColor: "#eee" // Cor do velocímetro
+        gaugeColor: "#eee", // Cor do velocímetro
+        decimals: 2 // Define o número de casas decimais desejadas
     });
 
     // Função para atualizar o valor do velocímetro
     async function updateGaugeValue() {
         // Verificar se é necessário atualizar o valor da célula
-        if (Date.now() - lastUpdateTimestamp > 60000) { // Verifica se passou 1 minuto desde a última atualização
+        if (Date.now() - lastUpdateTimestamp > 1000) { // Verifica se passou 1 minuto desde a última atualização
             await getCellValue();
         }
         // Atualizar o valor do velocímetro
@@ -260,7 +261,7 @@
     }
 
     // Atualizar o valor do velocímetro a cada 2 segundos
-    setInterval(updateGaugeValue, 2000);
+    setInterval(updateGaugeValue, 1000);
 </script>
 
 </body>
