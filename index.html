@@ -18,6 +18,7 @@
             margin: 0;
             padding: 0;
             background-color: #666666;
+            color: #ffffff;
         }
 
         .container {
@@ -110,7 +111,7 @@
             text-align: center;
             width: 500px; /* Defina a largura do velocímetro */
             height: 300px; /* Defina a altura do velocímetro */
-            margin-bottom: 50px; /* Adiciona espaço inferior */
+            margin-bottom: 20px; /* Adiciona espaço inferior */
         }
 
         /* Importação da fonte Orbitron */
@@ -120,6 +121,45 @@
             font-weight: 400;
             src: url(https://fonts.gstatic.com/s/orbitron/v15/yMJRMIlzdpvBhQQL_Qq7dys.ttf) format('truetype');
         }
+
+        /* Estilos para o ranking */
+        .ranking-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 2px solid #FF4500;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .ranking-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+
+        /* Cores para as posições do ranking */
+        .first-place {
+            color: #FFD700; /* Amarelo */
+            font-size: 35px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .second-place {
+            color: #C0C0C0; /* Prata */
+            font-size: 35px;
+            font-weight: bold;
+            text-align: center;
+            
+        }
+
+        .third-place {
+            color: #2E8B57; /* Verde Marinho */
+            font-size: 35px;
+            font-weight: bold;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -128,9 +168,11 @@
     <h1>Dashboard Montagem</h1>
     <div class="row" id="row1"></div>
     <div class="row" id="row2"></div>
+    <div id="gauge"></div>
+    <div class="mt-5"></div> <!-- Espaço para o ranking -->
+    <h1>Ranking de Montagem</h1>
+    <div id="ranking" class="row mt-4"></div>
 </div>
-
-<div id="gauge"></div>
 
 <script>
     // Relógio
@@ -203,7 +245,7 @@
     var lastUpdateTimestamp = 0; // Timestamp da última atualização
 
     // Meta: 20 computadores montados no final do dia (8 horas de trabalho)
-    var totalComputersGoal = 20;
+    var totalComputersGoal = 60;
     var totalWorkHours = 8;
     var computersPerHourGoal = totalComputersGoal / totalWorkHours; // 2.5 computadores por hora
 
@@ -262,6 +304,68 @@
 
     // Atualizar o valor do velocímetro a cada 2 segundos
     setInterval(updateGaugeValue, 1000);
+
+    // Código JavaScript do ranking
+    $(document).ready(function () {
+        var apiKey = 'AIzaSyAIB-qCRdOAgEJYuPAxNTEsoR2Ijt33-TE';
+        var spreadsheetId = '19A-Wgk9U-cZc7Pieq0sGTYDjnUxNk9Qnl9yPmwXwStM';
+        var range = 'MONTAGEM!A:D'; // Atualize com o nome da sua planilha e intervalo de dados
+
+        function updateRanking() {
+            var url = 'https://sheets.googleapis.com/v4/spreadsheets/' + spreadsheetId + '/values/' + range + '?key=' + apiKey;
+
+            $.get(url, function (data) {
+                var records = data.values;
+                var technicians = {};
+
+                // Loop through the records and count how many computers each technician has assembled today
+                records.forEach(function (record) {
+                    var technician = record[0];
+                    var date = record[2];
+                    var time = record[3];
+                    var currentDate = new Date().toLocaleDateString();
+                    if (date === currentDate) {
+                        if (!technicians[technician]) {
+                            technicians[technician] = 0;
+                        }
+                        technicians[technician]++;
+                    }
+                });
+
+                // Convert technicians object to an array of objects for sorting
+                var sortedTechnicians = Object.keys(technicians).map(function (name) {
+                    return {name: name, count: technicians[name]};
+                });
+
+                // Sort technicians by the number of computers assembled
+                sortedTechnicians.sort(function (a, b) {
+                    return b.count - a.count;
+                });
+
+                // Display the top 3 technicians in the ranking
+                var rankingHtml = '';
+                for (var i = 0; i < Math.min(sortedTechnicians.length, 3); i++) {
+                    var place = i + 1;
+                    var placeIndicator = '';
+                    if (place === 1) {
+                        placeIndicator = '<span class="badge badge-warning first-place">1°</span>';
+                    } else if (place === 2) {
+                        placeIndicator = '<span class="badge badge-secondary second-place">2°</span>';
+                    } else if (place === 3) {
+                        placeIndicator = '<span class="badge badge-info third-place">3°</span>';
+                    }
+                    rankingHtml += '<div class="col-sm-4 ranking-item">' + placeIndicator + ' <i class="fas fa-user ranking-icon"></i> ' + sortedTechnicians[i].name + ' - ' + sortedTechnicians[i].count + '</div>';
+                }
+
+                $('#ranking').html(rankingHtml);
+            });
+        }
+
+        // Update the ranking
+
+        updateRanking();
+        setInterval(updateRanking, 60000);
+    });
 </script>
 
 </body>
