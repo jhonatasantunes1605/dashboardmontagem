@@ -246,7 +246,7 @@
 
     // Meta: 20 computadores montados no final do dia (8 horas de trabalho)
     var totalComputersGoal = 60;
-    var totalWorkHours = 8;
+    var totalWorkHours = 7.5;
     var computersPerHourGoal = totalComputersGoal / totalWorkHours; // 2.5 computadores por hora
 
     // Função para carregar a API do Google Sheets
@@ -283,11 +283,11 @@
         id: "gauge",
         value: 0, // Valor inicial
         min: 0,
-        max: computersPerHourGoal * 1.5, // Definir o máximo como 1.5 vezes a meta para melhor visualização
+        max: computersPerHourGoal * 1, // Definir o máximo como 1.5 vezes a meta para melhor visualização
         title: "Produção",
         label: "Computadores/hora",
         levelColors: ["#FF0000", "#FFFF00", "#00FF00"], // Cores dos níveis: vermelho, amarelo, verde
-        gaugeWidthScale: 1.5, // Ajuste a largura do velocímetro (aumente ou diminua conforme necessário)
+        gaugeWidthScale: 1, // Ajuste a largura do velocímetro (aumente ou diminua conforme necessário)
         gaugeColor: "#eee", // Cor do velocímetro
         decimals: 2 // Define o número de casas decimais desejadas
     });
